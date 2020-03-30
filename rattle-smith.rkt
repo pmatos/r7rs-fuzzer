@@ -50,6 +50,9 @@
  [Let Expression ([definitions : Definition * = 0 #;(random 3)]
                   [body : DefinitionContext])
       #:prop strict-child-order? #t]
+ [LetStar Expression ([definitions : Definition * = 0 #;(random 3)]
+                      [body : DefinitionContext])
+          #:prop strict-child-order? #t]
 
  [LiteralBool Expression ([v = (even? (random 2))])]
  [LiteralNumber Expression (v) #:prop may-be-generated #f]
@@ -57,7 +60,7 @@
 
  [If Expression ([test : Expression] [then : Expression] [else : Expression])
      #:prop strict-child-order? #t]
- 
+
  )
 
 ;;
@@ -87,6 +90,10 @@
                                               ,(render-node (ast-child 'Expression d))))
                                 (ast-children (ast-child 'definitions n))))
                      ,@(render-node (ast-child 'body n))))]
+ [LetStar (lambda (n) `(let* (,@(map (lambda (d) `(,(string->symbol (ast-child 'name d))
+                                                   ,(render-node (ast-child 'Expression d))))
+                                     (ast-children (ast-child 'definitions n))))
+                         ,@(render-node (ast-child 'body n))))]
  [If (->se 'if 'test 'then 'else)]
 
  [LiteralBool (lambda (n) (ast-child 'v n))]
@@ -150,10 +157,13 @@
  [Let [(fresh-type-variable) (lambda (n t)
                                (hash 'body t
                                      'definitions (lambda (c) (fresh-type-variable))))]]
+ [LetStar [(fresh-type-variable) (lambda (n t)
+                                   (hash 'body t
+                                         'definitions (lambda (c) (fresh-type-variable))))]]
  [If [(fresh-type-variable)
       (lambda (n t)
         (hash 'test bool 'then t 'else t))]]
- 
+
  [LiteralBool [bool (no-child-types)]]
  [LiteralInt [int (no-child-types)]])
 
@@ -188,5 +198,3 @@
   (xsmith-command-line
    rattle-generate
    #:format-render rattle-format-render))
-
- 
